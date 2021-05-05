@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualBasic.FileIO;
 
 namespace ticketdrafter
 {
@@ -10,88 +11,36 @@ namespace ticketdrafter
     {
         static void Main(string[] args)
         {
-            List<Pick> picks = new List<Pick>();
+            //List<Pick> picks = new List<Pick>();
             List<string> owners;
-            using (StreamReader sr = new StreamReader("/Users/matt.connley/Downloads/test.csv"))
-            {       
-                string currentLine;
-                string firstLine = sr.ReadLine();
-                var columns = firstLine.Split(",");
-                columns.Skip(2).Take(columns.Length-2);
-                owners = new List<string>(columns.Skip(2).Take(columns.Length-2));
-                
-                var ownersString = "Owners are ";
+            //List<string> tiers;
 
 
-                foreach (var owner in owners)
-                {
-                    ownersString += owner + " ";
-                }
-
-                Console.WriteLine(ownersString);
-
-                
-
-                while((currentLine = sr.ReadLine()) != null)
-                {
-                    //Console.WriteLine(currentLine);
-                    var vals = currentLine.Split(",");
-                    var gameNum = vals[0];
-                    var tierName = vals[1];
-                    var pickVals = vals.Skip(2).Take(vals.Length-2);
-
-                    var testOut = "Game " + gameNum + " Tier " + tierName;
-                    var i = 0;
-
-                    List<OwnerPick> ownerPicks = new List<OwnerPick>();
-
-                    foreach (var v in pickVals)
-                    {
-                        var owner = owners[i];
-                        testOut += " " + owner + " " + v;
-                        i++;
-                        OwnerPick o = new OwnerPick() { ownerName = owner, pickPreference = int.Parse(v) };
-                        ownerPicks.Add(o);
-                    }
-                    //Console.WriteLine(testOut);
-                    picks.Add(new Pick { gameNumber = int.Parse(gameNum), tier = tierName, preference = ownerPicks, picked = false });
-                }
-                
-            }
-            var tiers = picks.Select(p => p.tier).Distinct();
-            foreach (var tier in tiers)
+            using (TextFieldParser parser = new TextFieldParser("/Users/matt.connley/Downloads/cubs2021.csv"))
             {
-                foreach (var o in owners)
+                parser.TextFieldType = FieldType.Delimited;
+                parser.Delimiters = new string[]{","};
+                var headers = parser.ReadFields();
+                owners = headers.Skip(2).ToList();
+
+                foreach (var h in headers.Skip(2))
                 {
-                    //var p = picks.OrderBy(x => x.
-                    
+                    Console.WriteLine(h);
                 }
-                foreach (var p in picks.Where(p => p.tier == tier))
-                {
-                    Console.WriteLine(p.gameNumber + " " + p.tier);
-                    foreach (var op in p.preference)
-                    {
-                        Console.WriteLine("---- " + op.ownerName + ": " + op.pickPreference);
-                    }
-                
-                }
+
             }
-
-
-
-
-            //Console.ReadKey(true);
-
         }
     }
-
-
-
+}
+/*
     class OwnerPick
     {
         public string ownerName { get; set; }
         public int pickPreference { get; set; }
     }
+
+    
+
 
     class Pick
     {
@@ -101,4 +50,8 @@ namespace ticketdrafter
         public bool picked { get; set; }
         public string AssignedTo { get; set; }
     }
+    }
+    
 }
+
+*/

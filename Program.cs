@@ -23,35 +23,13 @@ namespace ticketdrafter
                 var headers = parser.ReadFields();
                 owners = headers.Skip(2).ToList();
 
-                foreach (var h in headers.Skip(2))
+                foreach (var o in owners)
                 {
-                    Console.WriteLine(h);
+                    Console.WriteLine(o);
                 }
+                
 
             }
         }
     }
 }
-/*
-    class OwnerPick
-    {
-        public string ownerName { get; set; }
-        public int pickPreference { get; set; }
-    }
-
-    
-
-
-    class Pick
-    {
-        public int gameNumber { get; set; }
-        public string tier { get; set; }
-        public List<OwnerPick> preference { get; set; }
-        public bool picked { get; set; }
-        public string AssignedTo { get; set; }
-    }
-    }
-    
-}
-
-*/

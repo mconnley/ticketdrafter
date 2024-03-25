@@ -9,6 +9,7 @@ namespace ticketdrafter
 {
     class Program
     {
+        static string filePath;
         static void Main(string[] args)
         {
             List<owner> owners = new List<owner>();
@@ -20,8 +21,9 @@ namespace ticketdrafter
             bool halfOwnersPresent = false;
             int halfOwnersIndex = 0;
 
-            //TODO: change to input param
-            using (TextFieldParser parser = new TextFieldParser("d:\\MyLibraries\\Downloads\\cubs2024.csv"))
+            GetFile();
+
+            using (TextFieldParser parser = new TextFieldParser(filePath))
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.Delimiters = new string[]{","};
@@ -134,6 +136,17 @@ namespace ticketdrafter
                 }
             }
             Console.ReadLine();
+        }
+
+        static void GetFile()
+        {
+            Console.WriteLine("Enter path to ticket CSV:");
+            filePath = @"" + Console.ReadLine();
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("ERROR. File " + filePath + " does not exist. Try again.");
+                GetFile();
+            }
         }
     }
 

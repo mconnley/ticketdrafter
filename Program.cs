@@ -12,45 +12,94 @@ namespace ticketdrafter
         static void Main(string[] args)
         {
             List<owner> owners = new List<owner>();
+            List<owner> halfOwners = new List<owner>();
             List<string> tiers = new List<string>();
             List<pick> picks = new List<pick>();
             List<game> games = new List<game>();
             List<ownerPreference> prefs = new List<ownerPreference>();
+            bool halfOwnersPresent = false;
+            int halfOwnersIndex = 0;
 
             //TODO: change to input param
-            using (TextFieldParser parser = new TextFieldParser("d:\\MyLibraries\\Downloads\\cubs2021.csv"))
+            using (TextFieldParser parser = new TextFieldParser("d:\\MyLibraries\\Downloads\\cubs2024.csv"))
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.Delimiters = new string[]{","};
                 var headers = parser.ReadFields();
-                var ownerCols = headers.Skip(2).ToList();
-                var ownerCount = ownerCols.Count;
-                Console.WriteLine("THERE ARE " + ownerCount + " owners");
+                if (headers.Any(h => h.EndsWith("-HALF")))
+                {
+                    Console.WriteLine("There are half ownership shares.");
+                    halfOwnersPresent = true;
+                }
+                var ownerCols = headers.Skip(2).Where(h => h.EndsWith("-HALF") == false).ToList();
+
+                if (halfOwnersPresent)
+                {
+                    Console.WriteLine("Enter pick order for Half Owners:");
+                    halfOwnersIndex = Convert.ToInt32(Console.ReadLine()) - 1;
+                }
+
+                ownerCols.Insert(halfOwnersIndex, "HALF");
+
+                var ownerCount = ownerCols.Count();
+
+                Console.WriteLine("There are " + ownerCols.Where(o => o != "HALF") + " full owners:");
+                foreach (var item in ownerCols.Where(o => o != "HALF"))
+                {
+                    Console.WriteLine(item);
+                }
+                var halfOwnerCols = headers.Where(h => h.EndsWith("-HALF")).ToList();
+
+                Console.WriteLine("There are " + halfOwnerCols.Count + " half owners:");
+                foreach (var item in halfOwnerCols)
+                {
+                    Console.WriteLine(item.Replace("-HALF", ""));
+                }
 
                 var i = 1;
                 foreach (var c in ownerCols)
                 {
-                    owners.Add(new owner { ownerName = c, ownerIndex = i%ownerCount });
-                    Console.WriteLine("OWNER ORDER " + i + " INDEX " + i%ownerCount + " IS " + c);
+                    owners.Add(new owner { ownerName = c, ownerIndex = i % ownerCount });
+                    Console.WriteLine("OWNER ORDER " + i + " MODULO " + i%ownerCount + " IS " + c);
                     i++;
                 }
-               
+                
                 i = 1;
+                foreach (var c in halfOwnerCols)
+                {
+                    halfOwners.Add(new owner { ownerName = c, ownerIndex = i % halfOwnerCols.Count });
+                    Console.WriteLine("HALF OWNER ORDER " + i + " MODULO " + i % halfOwnerCols.Count + " IS " + c);
+                    i++;
+                }
+
+                i = 1;
+                var halfOwnerPickIndex = 1;
                 while (!parser.EndOfData)
                 {
+                    var rawOwnerCols = headers.Skip(2).ToList();
                     var currentRow = parser.ReadFields();
                     int gameNum = int.Parse(currentRow[0]);
 
                     var prefCols = currentRow.Skip(2).ToList();
                     
                     var pi = 0;
+                    
                     foreach (var pc in prefCols)
                     {
-                        prefs.Add(new ownerPreference { gameNum = gameNum, ownerName = owners[pi].ownerName, preference = int.Parse(pc) });
+                        prefs.Add(new ownerPreference { gameNum = gameNum, ownerName = rawOwnerCols[pi], preference = int.Parse(pc) });
                         pi++;
                     }
 
-                    pick p = new pick() { pickNum = i, ownerName = owners.Where(o => o.ownerIndex == i% ownerCols.Count).First().ownerName, tier = currentRow[1] };
+                    var currentOwner = owners.Where(o => o.ownerIndex == i % ownerCols.Count).First();
+                    var currentOwnerName = currentOwner.ownerName;
+
+                    if(currentOwner.ownerName == "HALF")
+                    {
+                        currentOwnerName = halfOwners.Where(o => o.ownerIndex == halfOwnerPickIndex % 2).FirstOrDefault().ownerName;
+                        halfOwnerPickIndex++;
+                    }
+
+                    pick p = new pick() { pickNum = i, ownerName = currentOwnerName, tier = currentRow[1] };
                     picks.Add(p);
 
                     game g = new game { gameNum = int.Parse(currentRow[0]), tier = currentRow[1], assignedOwnerName = null, picked = false };
